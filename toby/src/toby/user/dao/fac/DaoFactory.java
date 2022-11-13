@@ -15,7 +15,6 @@ public class DaoFactory {
 	@Bean
 	public UserDao userDao() {
 		UserDao userDao = new UserDao();
-		//userDao.setConnectionMaker(connectionMaker());
 		
 		userDao.setDataSource(dataSource());
 		
@@ -34,8 +33,4 @@ public class DaoFactory {
 		return dataSource;
 	}
 	
-//	@Bean
-//	public ConnectionMaker connectionMaker() {
-//		return new NConnectionMaker();
-//	}
 }
