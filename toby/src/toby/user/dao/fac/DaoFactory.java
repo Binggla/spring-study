@@ -6,15 +6,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
-import toby.user.dao.UserDao;
+import toby.user.dao.UserDaoJdbc;
 import toby.user.dao.cm.ConnectionMaker;
 import toby.user.dao.cm.impl.NConnectionMaker;
 
 @Configuration
 public class DaoFactory {
 	@Bean
-	public UserDao userDao() {
-		UserDao userDao = new UserDao();
+	public UserDaoJdbc userDao() {
+		UserDaoJdbc userDao = new UserDaoJdbc();
 		
 		userDao.setDataSource(dataSource());
 		

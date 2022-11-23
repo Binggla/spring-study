@@ -6,12 +6,18 @@ import static org.junit.Assert.assertThat;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -21,25 +27,42 @@ import toby.user.domain.User;
 @ContextConfiguration(locations="/test-applicationContext.xml") //테스트 컨텍스트가 자동으로 만들어줄 애플리케이션 컨텍스트의 위치
 public class UserDaoTest {
 	
-	@Autowired
-	private ApplicationContext context;
+	@Autowired private ApplicationContext context;
+	@Autowired private UserDao dao;
+	@Autowired DataSource dataSource;
 	
-	private UserDao dao;
 	private User user1;
 	private User user2;
 	private User user3;
 	
 	@Before
 	public void setUp() {
-		this.dao = this.context.getBean("userDao", UserDao.class);
+		this.dao = this.context.getBean("userDao", UserDaoJdbc.class);
 		
-		this.user1 = new User("jeeesubb", "지수빈", "spring1");
-		this.user2 = new User("binggla", "박수빈", "spring2");
-		this.user3 = new User("subin", "김수빈", "spring3");
+		this.user1 = new User("gyumee", "지수빈", "spring1");
+		this.user2 = new User("leegw700", "박수빈", "spring2");
+		this.user3 = new User("bumjin", "김수빈", "spring3");
 	}
 	
 	@Test
-	public void getAll() throws SQLException, ClassNotFoundException {
+	public void sqlExceptionTranslate() {
+		dao.deleteAll();
+		
+		try {
+			dao.add(user1);
+			dao.add(user1);	//중복으로 예외 발생
+			
+		} catch (DuplicateKeyException ex) {
+			SQLException sqlEx = (SQLException) ex.getRootCause();
+			SQLExceptionTranslator set = 
+				new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+			
+			assertThat(set.translate(null, null, sqlEx), is(DuplicateKeyException.class));
+		}
+	}
+	
+	@Test
+	public void getAll() {
 		dao.deleteAll();
 		
 		List<User> users0 = dao.getAll();
@@ -71,7 +94,7 @@ public class UserDaoTest {
 	}
 	
 	@Test
-	public void addAndGet() throws SQLException, ClassNotFoundException {
+	public void addAndGet() {
 		dao.deleteAll();
 		assertThat(dao.getCount(), is(0));
 		
@@ -85,7 +108,7 @@ public class UserDaoTest {
 	}
 	
 	@Test
-	public void count() throws SQLException, ClassNotFoundException {
+	public void count() {
 		dao.deleteAll();
 		assertThat(dao.getCount(), is(0));
 		
@@ -100,7 +123,7 @@ public class UserDaoTest {
 	}
 	
 	@Test(expected=EmptyResultDataAccessException.class)
-	public void getUserFailure() throws SQLException, ClassNotFoundException {
+	public void getUserFailure() {
 		dao.deleteAll();
 		assertThat(dao.getCount(), is(0));
 		
